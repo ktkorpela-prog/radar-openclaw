@@ -1,0 +1,37 @@
+{
+  "name": "@essentianlabs/openclaw-radar",
+  "version": "0.1.0",
+  "description": "OpenClaw plugin wrapping @essentianlabs/radar-lite for agent risk assessment. BETA — not recommended for enterprise or production use without independent legal review.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "openclaw-radar": "bin/openclaw-radar.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node test/plugin-test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "openclaw",
+    "plugin",
+    "radar",
+    "risk",
+    "governance",
+    "ai-safety"
+  ],
+  "author": "EssentianLabs",
+  "license": "MIT",
+  "dependencies": {
+    "@essentianlabs/radar-lite": "^0.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "openclaw": {
+    "id": "openclaw-radar",
+    "displayName": "RADAR Risk Assessment",
+    "description": "Assess agent actions for risk before execution using Vela Lite"
+  }
+}

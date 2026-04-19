@@ -1,0 +1,20 @@
+{
+  "id": "openclaw-radar",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "defaultProvider": {
+        "type": "string",
+        "enum": ["anthropic", "openai", "google"],
+        "default": "anthropic",
+        "description": "LLM provider for Vela Lite assessments"
+      },
+      "t2Provider": {
+        "type": "string",
+        "enum": ["anthropic", "openai", "google"],
+        "description": "Separate LLM provider for T2 assessments (dual-provider segregation)"
+      }
+    },
+    "required": []
+  }
+}
