@@ -1,9 +1,13 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { homedir } from 'os';
+import { createRequire } from 'module';
+import { safeReadFile, safeWriteFile } from '../dist/safe-fs.js';
+import { OPENCLAW_MARKER, OPENCLAW_INSTRUCTION } from '../dist/instruction.js';
 
+const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ── --version / -v ──────────────────────────────────────────────────
@@ -23,45 +27,85 @@ if (process.argv.includes('--dashboard')) {
     stdio: 'inherit',
     shell: true,
   });
-  // Don't exit — dashboard keeps running
+
 } else if (process.argv.includes('install')) {
 
 // ── install ─────────────────────────────────────────────────────────
 
-  const MARKER = '<!-- OPENCLAW-RADAR -->';
-  const INSTRUCTION = `${MARKER}
-## RADAR — Risk Assessment
+  // 0. Check radar-lite is installed and version-compatible
+  const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+  const requiredRange =
+    ownPkg.peerDependencies?.['@essentianlabs/radar-lite'] ||
+    ownPkg.dependencies?.['@essentianlabs/radar-lite'] ||
+    '^0.3.0';
+  const requiredMajor = requiredRange.match(/(\d+)\.(\d+)/);
 
-Call \`radar_assess\` before every task. It must be your first tool call.
-If the verdict is PROCEED, continue. If HOLD or DENY, stop and explain the verdict to the user.
-${MARKER}`;
+  let installedVersion;
+  try {
+    const radarPkgPath = require.resolve('@essentianlabs/radar-lite/package.json', {
+      paths: [process.cwd(), __dirname],
+    });
+    installedVersion = JSON.parse(readFileSync(radarPkgPath, 'utf-8')).version;
+  } catch {
+    try {
+      await import('@essentianlabs/radar-lite');
+      installedVersion = 'unknown';
+    } catch {
+      console.error(
+        'Error: @essentianlabs/radar-lite is not installed.\n\n' +
+        '  npm install @essentianlabs/radar-lite@latest\n'
+      );
+      process.exit(1);
+    }
+  }
 
-  // 1. Add instruction to ~/.claude/CLAUDE.md
+  if (installedVersion !== 'unknown' && requiredMajor) {
+    const [, reqMaj, reqMin] = requiredMajor;
+    const installedMatch = installedVersion.match(/(\d+)\.(\d+)/);
+    if (installedMatch) {
+      const [, insMaj, insMin] = installedMatch;
+      const compatible = insMaj === reqMaj && (reqMaj !== '0' ? true : insMin === reqMin);
+      if (!compatible) {
+        console.error(
+          `Error: @essentianlabs/radar-lite version mismatch.\n` +
+          `  Installed: ${installedVersion}\n` +
+          `  Required:  ${requiredRange}\n\n` +
+          `Update radar-lite:\n\n` +
+          `  npm install @essentianlabs/radar-lite@latest\n`
+        );
+        process.exit(1);
+      }
+    }
+  }
+
+  // 1. Add instruction to ~/.claude/CLAUDE.md (via safe-fs)
   const claudeDir = join(homedir(), '.claude');
   const claudeMdPath = join(claudeDir, 'CLAUDE.md');
 
   mkdirSync(claudeDir, { recursive: true });
 
-  let existing = '';
-  if (existsSync(claudeMdPath)) {
-    existing = readFileSync(claudeMdPath, 'utf-8');
-  }
+  let existing = safeReadFile(claudeMdPath);
+  if (existing === null) existing = '';
 
-  if (existing.includes(MARKER)) {
-    // Replace existing block
-    const regex = new RegExp(`${MARKER}[\\s\\S]*?${MARKER}`, 'm');
-    const updated = existing.replace(regex, INSTRUCTION);
-    writeFileSync(claudeMdPath, updated, 'utf-8');
-    console.log('Updated RADAR instructions in ~/.claude/CLAUDE.md');
+  if (existing.includes(OPENCLAW_MARKER)) {
+    const regex = new RegExp(`${OPENCLAW_MARKER}[\\s\\S]*?${OPENCLAW_MARKER}`, 'm');
+    const updated = existing.replace(regex, OPENCLAW_INSTRUCTION);
+    if (!safeWriteFile(claudeMdPath, updated)) {
+      console.error('Failed to update ~/.claude/CLAUDE.md');
+      process.exit(1);
+    }
+    console.log('Updated openclaw-radar instructions in ~/.claude/CLAUDE.md');
   } else {
-    // Append
     const separator = existing.length > 0 ? '\n\n' : '';
-    writeFileSync(claudeMdPath, existing + separator + INSTRUCTION + '\n', 'utf-8');
-    console.log('Added RADAR instructions to ~/.claude/CLAUDE.md');
+    if (!safeWriteFile(claudeMdPath, existing + separator + OPENCLAW_INSTRUCTION + '\n')) {
+      console.error('Failed to write ~/.claude/CLAUDE.md');
+      process.exit(1);
+    }
+    console.log('Added openclaw-radar instructions to ~/.claude/CLAUDE.md');
   }
 
   // 2. Remind about OpenClaw plugin config
-  console.log('\nDone. RADAR plugin installed.');
+  console.log('\nDone. openclaw-radar plugin installed.');
   console.log('');
   console.log('To enable in OpenClaw, add to your openclaw config:');
   console.log('');
@@ -83,30 +127,29 @@ ${MARKER}`;
     console.log('');
   }
 
-  console.log('Existing Claude Code sessions need to be restarted to pick up RADAR.');
+  console.log('Existing Claude Code sessions need to be restarted to pick up openclaw-radar.');
   process.exit(0);
 
 } else if (process.argv.includes('uninstall')) {
 
 // ── uninstall ───────────────────────────────────────────────────────
 
-  const MARKER = '<!-- OPENCLAW-RADAR -->';
-
-  // 1. Remove instruction from CLAUDE.md
   const claudeMdPath = join(homedir(), '.claude', 'CLAUDE.md');
+  const content = safeReadFile(claudeMdPath);
 
-  if (existsSync(claudeMdPath)) {
-    let content = readFileSync(claudeMdPath, 'utf-8');
-    if (content.includes(MARKER)) {
-      const regex = new RegExp(`\\n?\\n?${MARKER}[\\s\\S]*?${MARKER}\\n?`, 'm');
-      content = content.replace(regex, '').trim();
-      writeFileSync(claudeMdPath, content + (content ? '\n' : ''), 'utf-8');
-      console.log('Removed RADAR instructions from ~/.claude/CLAUDE.md');
+  if (content !== null && content.includes(OPENCLAW_MARKER)) {
+    const regex = new RegExp(`\\n?\\n?${OPENCLAW_MARKER}[\\s\\S]*?${OPENCLAW_MARKER}\\n?`, 'm');
+    const stripped = content.replace(regex, '').trim();
+    const final = stripped + (stripped ? '\n' : '');
+    if (!safeWriteFile(claudeMdPath, final)) {
+      console.error('Failed to update ~/.claude/CLAUDE.md');
+      process.exit(1);
     }
+    console.log('Removed openclaw-radar instructions from ~/.claude/CLAUDE.md');
   }
 
   console.log('');
-  console.log('Done. RADAR plugin uninstalled.');
+  console.log('Done. openclaw-radar plugin uninstalled.');
   console.log('Remember to also remove "openclaw-radar" from your OpenClaw plugin config.');
   process.exit(0);
 

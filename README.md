@@ -149,9 +149,9 @@ Force re-read of RADAR configuration from disk. No parameters.
 
 | Tier | Verdict | Meaning |
 |------|---------|---------|
-| T1 | PROCEED | Below review threshold — action assessed, not held |
+| T1 | PROCEED | Action assessed, not held |
 | T2 | HOLD | Requires review — agent must present options and wait |
-| Policy/20+ | DENY | Blocked — do not proceed without explicit override |
+| Policy/high risk | DENY | Blocked by policy or high risk — do not proceed without explicit override |
 
 - `result.proceed` (boolean) for backward compatibility
 - `result.status` (`PROCEED` | `HOLD` | `DENY`) is the primary verdict

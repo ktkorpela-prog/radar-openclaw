@@ -6,7 +6,7 @@ disable-model-invocation: false
 metadata:
   openclaw:
     requires:
-      env: [ANTHROPIC_API_KEY]
+      env: []
 ---
 
 # RADAR — Risk Assessment for Agent Actions
@@ -68,7 +68,7 @@ Continue with the action. No further steps needed.
 ### DENY (`result.status === 'DENY'`)
 
 **Do not proceed under any circumstances** without explicit user override. Explain:
-- The action was denied by policy or due to high risk (score 20+)
+- The action was denied by policy or due to high risk
 - What triggered the denial
 - The user must explicitly override if they want to proceed
 
