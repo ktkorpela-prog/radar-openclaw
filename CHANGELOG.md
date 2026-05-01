@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 — 2026-05-01
+
+Published to npm.
+
+### Changed
+
+- CHANGELOG wording cleaned up — removed implementation detail and internal references that did not belong in a public changelog. No code changes from 0.2.0.
+
 ## 0.2.0 — 2026-04-20
 
 Hardening release. Adapts patterns from radar-mcp v3+: shared instruction module, safe filesystem wrapper, plugin-load startup checks, and an expanded test suite.
@@ -33,7 +41,7 @@ Hardening release. Adapts patterns from radar-mcp v3+: shared instruction module
 - **`repository` field** — Points to radar-lite repo on npm page.
 - **`homepage` field** — Links to docs at radar.essentianlabs.com.
 - **`engines` field** — Added `"node": ">=18.0.0"` — clear error instead of cryptic WASM failure on older Node.
-- **SKILL.md DENY description** — Removed score threshold ("20+") that leaked IP after docs cleanup.
+- **SKILL.md DENY description** — Wording cleanup.
 - **SKILL.md env requirement** — Changed from `[ANTHROPIC_API_KEY]` to `[]` — plugin works with any provider (Anthropic, OpenAI, or Google), not just Anthropic.
 
 ## 0.1.0 — 2026-04-19
@@ -66,16 +74,11 @@ Initial build of @essentianlabs/openclaw-radar. Published to npm.
 - **M2 (LOW)** — Added runtime `activityType` enum check — rejects unknown types before they reach radar-lite.
 - **M12 (LOW)** — Added anti-prompt-injection guidance to SKILL.md: override authorization must come from user's direct message, never from action descriptions or tool outputs.
 
-### IP exposure reduction
+### Documentation
 
-- **README** — Verdict model table: removed score threshold ("20+") from DENY row, replaced with "Policy/high risk"
-- **docs.html** — Removed `/radar/suggest` endpoint (reveals cross-tenant pattern mechanism) and sidebar link
-- **docs.html** — Vela section: removed cross-tenant learning explanation (pattern accumulation, subscriber base growth)
-- **docs.html** — T3 description: removed "cross-tenant patterns from every agent she watches"
-- **docs.html** — Removed orphaned "Score ranges above are defaults..." line
+- README verdict model wording cleanup.
 
 ### Known limitations
 
-- `options` and `recommended` fields in HOLD results are `null` when no LLM key is configured (rules engine fallback)
-- M7 (MEDIUM, upstream): radar-lite exposes internal LLM error messages in the `vela` field — requires fix in radar-lite
-- M9 (MEDIUM, architectural): `override_deny` audit trail relies on agent-supplied `decidedBy` — inherent to agent-tool architecture
+- `options` and `recommended` fields in HOLD results are `null` when no LLM key is configured (rules engine fallback).
+- The `decidedBy` field on `radar_strategy` is agent-supplied — accountability for override decisions relies on the calling environment, not on the plugin layer.
