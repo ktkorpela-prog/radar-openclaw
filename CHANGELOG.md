@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.2 — 2026-05-01
+
+README updates aligning with radar-mcp:
+
+- Beta banner at top — "Early beta for evaluation only" + invitation for feedback
+- New "Privacy and data flow" section after "When RADAR adds value" — documents local-only execution, LLM provider data flow, local SQLite history, no telemetry
+- Beta Terms of Use link added to advisory notice
+- Copy fix in install note: "MCP servers" → "OpenClaw plugins"
+
+No code changes from 0.2.1.
+
 ## 0.2.1 — 2026-05-01
 
 Published to npm.

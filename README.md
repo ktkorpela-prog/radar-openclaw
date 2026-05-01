@@ -1,5 +1,9 @@
 # @essentianlabs/openclaw-radar
 
+Early beta for evaluation only.
+
+OpenClaw RADAR is in active evaluation. If you try it, assume it's experimental and tell me where it breaks — technically or conceptually.
+
 OpenClaw plugin that wraps [@essentianlabs/radar-lite](https://www.npmjs.com/package/@essentianlabs/radar-lite) as tools for OpenClaw agents.
 
 Registers three tools — `radar_assess`, `radar_strategy`, `radar_reload` — so any OpenClaw agent can assess risk before acting.
@@ -16,7 +20,7 @@ Registers three tools — `radar_assess`, `radar_strategy`, `radar_reload` — s
 - **Liability is not transferred, reduced, or shared** by using RADAR. It remains with the developer, operator, and end user in all cases.
 - If an external LLM provider is configured (Anthropic, OpenAI, or Google), **action text leaves the local machine** for Vela Lite assessment. Without a provider configured, assessments use the local rules engine only.
 
-RADAR is in **beta**. Not recommended for enterprise or production use without independent legal and compliance review.
+RADAR is in **beta**. Not recommended for enterprise or production use without independent legal and compliance review. By installing this package you agree to the [Beta Terms of Use](https://radar.essentianlabs.com/terms.html).
 
 ---
 
@@ -51,6 +55,16 @@ The OpenClaw integration is designed for agents that run autonomously — the pl
 
 ---
 
+## Privacy and data flow
+
+- **No calls to EssentianLabs servers** — everything runs locally
+- **LLM calls go to your configured provider** (Anthropic, OpenAI, or Google) using your API key, at your cost. Action descriptions are sent to the provider for Vela Lite assessment. Review your provider's data retention policies.
+- **Without an LLM key** — no external calls are made. The rules engine runs entirely locally and Vela reasoning is unavailable.
+- **Assessment history** — stored locally in SQLite at `~/.radar/register.db`. Action hashes only — never action text.
+- **No telemetry, no analytics, no phoning home**
+
+---
+
 ## Install
 
 ```bash
@@ -80,7 +94,7 @@ npx openclaw-radar --version      # Print version
 npx openclaw-radar --dashboard    # Open RADAR configuration dashboard
 ```
 
-**Note:** MCP servers and CLAUDE.md instructions load at session start. Existing Claude Code sessions need to be restarted to pick up changes.
+**Note:** OpenClaw plugins and CLAUDE.md instructions load at session start. Existing Claude Code sessions need to be restarted to pick up changes.
 
 ## Configuration
 

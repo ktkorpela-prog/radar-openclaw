@@ -1,6 +1,6 @@
 {
   "name": "@essentianlabs/openclaw-radar",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "OpenClaw plugin wrapping @essentianlabs/radar-lite for agent risk assessment. BETA — not recommended for enterprise or production use without independent legal review.",
   "type": "module",
   "main": "dist/index.js",
