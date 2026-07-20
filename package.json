@@ -30,7 +30,8 @@
     "openclaw.plugin.json",
     "LICENSE",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "SECURITY.md"
   ],
   "repository": {
     "type": "git",
