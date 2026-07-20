@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.2.3 — 2026-07-20
+
+**fix: widen radar-lite peer-dep to 0.4.x + preinstall guard + supply-chain patches**
+
+### radar-lite 0.4.x compatibility
+
+Previous peer-dep `^0.3.0` did not accept radar-lite 0.4.x releases (five patches shipped 2026-07-20: 0.4.1 Gemini fix, 0.4.2 tldr label, 0.4.3 supply-chain, 0.4.4 update notification, 0.4.5→0.4.6 preinstall guard). Users installing openclaw-radar alongside `radar-lite@latest` got a peer-dep warning (npm 7+ still installs, older npms warn only).
+
+Fix:
+- `dependencies["@essentianlabs/radar-lite"]`: `^0.3.1` → `^0.3.1 || ^0.4.0`
+- `peerDependencies["@essentianlabs/radar-lite"]`: `^0.3.0` → `^0.3.0 || ^0.4.0`
+
+No API changes required in openclaw's own code — radar-lite 0.4.x preserved the v0.3.x public API. Verified via existing tests.
+
+### Preinstall guard (matching radar-lite v0.4.5+ pattern)
+
+Prevents `npm install @essentianlabs/openclaw-radar` from succeeding when run from inside the openclaw-radar dev repo itself. Same self-install trap as radar-lite hit twice in a single day for its maintainer.
+
+- New `preinstall-guard.js` at project root, added to `files` array
+- New `preinstall` script wired in package.json
+- 7 tests in `test/preinstall-guard.test.js` covering block-case + 6 pass-through scenarios
+
+Fires ONLY on the exact trap; consumer installs, dev-repo `npm install` (no args), missing/malformed parent package.json, near-miss names all pass through silently.
+
+Adds ~10-30ms preinstall latency to fresh installs (Node.js cold start). Negligible.
+
+### Supply-chain patches (same 4 as radar-lite v0.4.3)
+
+`npm audit fix` — transitive-only, within existing semver ranges. Zero package.json changes to direct deps. Resolves:
+
+- `form-data 4.0.0-4.0.5` → **4.0.6** — high — CRLF injection ([GHSA-hmw2-7cc7-3qxx](https://github.com/advisories/GHSA-hmw2-7cc7-3qxx))
+- `qs 6.11.1-6.15.1` → **6.15.3** — moderate — DoS via null in comma-format arrays ([GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26))
+- `body-parser 1.20.4` → **1.20.6** — moderate — cascades from qs
+- `express 4.22.1` → **4.22.2** — moderate — cascades from qs
+
+Only `package-lock.json` changed. Post-fix `npm audit` clean.
+
+### Tests
+
+Full suite passing:
+- `plugin-test.js` — behavior tests
+- `unit.test.js` — 16 tests (safe-fs coverage)
+- `preinstall-guard.test.js` — 7 tests (new)
+
+### Rollback
+
+`npm install @essentianlabs/openclaw-radar@0.2.2` reverts. Trap re-opens, peer-dep re-narrows to 0.3.x only.
+
+---
+
 ## 0.2.2 — 2026-05-01
 
 README updates aligning with radar-mcp:

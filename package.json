@@ -1,6 +1,6 @@
 {
   "name": "@essentianlabs/openclaw-radar",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "OpenClaw plugin wrapping @essentianlabs/radar-lite for agent risk assessment. BETA — not recommended for enterprise or production use without independent legal review.",
   "type": "module",
   "main": "dist/index.js",
@@ -10,8 +10,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node test/plugin-test.js && node --test test/unit.test.js",
-    "prepublishOnly": "npm run build"
+    "test": "node test/plugin-test.js && node --test test/unit.test.js && node --test test/preinstall-guard.test.js",
+    "prepublishOnly": "npm run build",
+    "preinstall": "node preinstall-guard.js"
   },
   "keywords": [
     "openclaw",
@@ -25,6 +26,7 @@
     "dist/",
     "bin/",
     "skills/",
+    "preinstall-guard.js",
     "openclaw.plugin.json",
     "LICENSE",
     "README.md",
@@ -41,10 +43,10 @@
   "author": "EssentianLabs",
   "license": "MIT",
   "dependencies": {
-    "@essentianlabs/radar-lite": "^0.3.1"
+    "@essentianlabs/radar-lite": "^0.3.1 || ^0.4.0"
   },
   "peerDependencies": {
-    "@essentianlabs/radar-lite": "^0.3.0"
+    "@essentianlabs/radar-lite": "^0.3.0 || ^0.4.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0"
